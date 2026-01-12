@@ -38,7 +38,8 @@ class LitFengWuGHR(pl.LightningModule):
         depth=5,
         heads=4,
         mlp_dim=5,
-        feature_dim: int = 605,  # TODO where does this come from?
+        feature_dim: int | None = None,
+        feature_variance: np.ndarray | None = None,
         lr: float = 3e-4,
     ):
         """
@@ -62,8 +63,14 @@ class LitFengWuGHR(pl.LightningModule):
             mlp_dim=mlp_dim,
             channels=channels,
         )
+        # Default feature_dim to channels if not specified
+        if feature_dim is None:
+            feature_dim = channels
+        # Use provided feature_variance or default to uniform variance
+        if feature_variance is None:
+            feature_variance = np.ones((feature_dim,))
         self.criterion = NormalizedMSELoss(
-            lat_lons=lat_lons, feature_variance=np.ones((feature_dim,))
+            lat_lons=lat_lons, feature_variance=feature_variance
         )
         self.lr = lr
         self.save_hyperparameters()
